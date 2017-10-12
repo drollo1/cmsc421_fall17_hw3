@@ -3,7 +3,10 @@
 //Author Name: Dominic Rollo
 //Assignment: Homework 3
 //
-//
+//  A simulation of groups of children collecting candy. The
+//	 simulation uses threads for each group and the restocking
+//   the houses. The args passed in are file name followed buy
+//   number of seconds to run.
 //
 //**************Outside Help*********************************
 //  https://www.tutorialspoint.com/c_standard_library/c_function_rand.htm
@@ -13,7 +16,6 @@
 // 
 //
 //***********************************************************
-//#define _POSIX_SOURCE
 #define _BSD_SOURCE
 
 #include <stdio.h>
@@ -23,7 +25,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <pthread.h>
-//#include <signal.h>
+
 
 typedef struct House{
 	int location[2];
@@ -47,7 +49,7 @@ int lst_size, monster_size, instr_size;
 pthread_mutex_t prnt_lock, thread_lock, house_lock[10];
 
 
-#define START_SIZE 2
+#define START_SIZE 10
 
 // Puts line from stream
 //**************************************************************
@@ -196,12 +198,12 @@ static void collect_candy(int group, int house){
 		neighborhood[house].candy=neighborhood[house].candy - lil_monsters[group].size;
 		lil_monsters[group].candy += lil_monsters[group].size;
 		total_candy+=lil_monsters[group].size;
-		printf("*****group %d collected %d candy\n", group, lil_monsters[group].size);
+		//printf("*****group %d collected %d candy\n", group, lil_monsters[group].size);
 	}
 	else{
 		lil_monsters[group].candy += neighborhood[house].candy;
 		total_candy+= neighborhood[house].candy;
-		printf("*****group %d collected %d candy\n", group, neighborhood[house].candy);
+		//printf("*****group %d collected %d candy\n", group, neighborhood[house].candy);
 		neighborhood[house].candy= 0;
 
 	}
@@ -234,7 +236,6 @@ static void *group_up(void *args){
 		lil_monsters[group_num].cur_house = move_to;
 		collect_candy(group_num, move_to);
 	}
-	printf("Exit\n");
 	return NULL;
 }
 
@@ -271,6 +272,8 @@ static void run_sim(){
 	print_group();
 	print_house();
 	end_sim=1;
+	for(int i=0; i<=G;i++)
+		pthread_join(threads[i], NULL);
 }
 
 int main(int argc, char *argv[]){
@@ -293,41 +296,7 @@ int main(int argc, char *argv[]){
 	refill_lst=malloc(sizeof(Instruction)*lst_size);
 	parser(data);
 	run_sim();
-	//***************************************************
-	/*end_sim=0;
-	start_sim=0;
-	total_candy=0;
-	pthread_mutex_init(&prnt_lock, NULL);
-	pthread_mutex_init(&thread_lock, NULL);
-	for( int k=0; k<10;k++)
-		pthread_mutex_init(&house_lock[k], NULL);
-	pthread_t threads[G+1];
-	int number[G];
-	for(int j=0; j<G;j++){
-		number[j]=j;
-		pthread_mutex_lock(&thread_lock);
-		pthread_create(threads + j, NULL, group_up, number+j);
-	}
-	int i=0;
-	pthread_mutex_lock(&thread_lock);
-	pthread_create(threads+G, NULL, restock, NULL);
-	pthread_mutex_lock(&thread_lock);
-	while(i<T){
-		pthread_mutex_lock(&prnt_lock);
-		printf("After %d seconds:\n", i);
-		print_group();
-		print_house();
-		pthread_mutex_unlock(&prnt_lock);
-		start_sim=1;
-		usleep(1000000);
-		i++;
-	}
-	printf("After %d seconds:\n", i);
-	print_group();
-	print_house();
-	end_sim=1;*/
-	//**************************************************
-
+	
 	//clean up
 	fclose(data);
 	free(lil_monsters);
