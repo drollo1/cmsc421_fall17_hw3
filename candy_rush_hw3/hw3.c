@@ -6,11 +6,11 @@
 //
 //
 //**************Outside Help*********************************
-//  
+//  https://www.tutorialspoint.com/c_standard_library/c_function_rand.htm
 //
 //***********************************************************
 //**************Questions************************************
-// https://www.tutorialspoint.com/c_standard_library/c_function_rand.htm
+// 
 //
 //***********************************************************
 //#define _POSIX_SOURCE
@@ -47,7 +47,7 @@ int lst_size, monster_size, instr_size;
 pthread_mutex_t prnt_lock, thread_lock, house_lock[10];
 
 
-#define START_SIZE 100
+#define START_SIZE 2
 
 // Puts line from stream
 //**************************************************************
@@ -81,8 +81,12 @@ static void house_parser(FILE *infile){
 // Parse out the group variable and store in an array
 static void group_parser(FILE *infile){
 	monster_size=START_SIZE;
-	lil_monsters=malloc(sizeof(Group)*monster_size);
 	for (int i=0; i<G;i++){
+		if (i>=monster_size){
+			printf("resize\n");
+			monster_size=START_SIZE+monster_size;
+			lil_monsters=realloc(lil_monsters, sizeof(Group)*monster_size);
+		}
 		lil_monsters[i].start_house=get_number(infile);
 		lil_monsters[i].cur_house=lil_monsters[i].start_house;
 		lil_monsters[i].size=get_number(infile);
@@ -93,9 +97,13 @@ static void group_parser(FILE *infile){
 //**************************************************************
 static void instruction_parser(FILE *infile){
 	lst_size=START_SIZE;
-	refill_lst=malloc(sizeof(Instruction)*lst_size);
 	int i=0;
 	do{
+		if (i>=lst_size){
+			printf("list resize\n");
+			lst_size=START_SIZE+lst_size;
+			refill_lst=realloc(refill_lst, sizeof(Instruction)*lst_size);
+		}
 		refill_lst[i].house=get_number(infile);
 		refill_lst[i].candy=get_number(infile);
 		
@@ -279,6 +287,10 @@ int main(int argc, char *argv[]){
 		}
 
 	T=atoi(argv[2]);
+	monster_size=START_SIZE;
+	lst_size=START_SIZE;
+	lil_monsters=malloc(sizeof(Group)*monster_size);
+	refill_lst=malloc(sizeof(Instruction)*lst_size);
 	parser(data);
 	run_sim();
 	//***************************************************
@@ -319,5 +331,6 @@ int main(int argc, char *argv[]){
 	//clean up
 	fclose(data);
 	free(lil_monsters);
+	free(refill_lst);
 	return 0;
 }
