@@ -13,8 +13,12 @@
 //
 //***********************************************************
 //**************Questions************************************
-// 
-//
+//  1. A group might get to a house alittle bit after the main 
+//   thread's second count.  If it does, the amount of candy will
+//   change while the old number was being displayed.
+//  2. The program could calculate when a group will get to a 
+//   at the second mark and wait for it to aquire candy before
+//   main thread prints.
 //***********************************************************
 #define _BSD_SOURCE
 
@@ -127,6 +131,7 @@ static void print_house(void){
 	printf("Total candy: %d\n", total_candy);
 }
 
+// Prints out group size, where they are going and 
 static void print_group(void){
 	printf("  Group statuses:\n");
 	for (int i=0;i<G;i++){
